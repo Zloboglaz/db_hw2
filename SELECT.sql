@@ -71,12 +71,12 @@ SELECT a.artist_name
  
 /* 5. Названия сборников, в которых присутствует исполнитель Control Denied (выберите его сами) */ 
 SELECT DISTINCT c.collection_name
-  FROM collection AS c
-  JOIN track_collection tc ON c.collection_id = tc.collection_id
-  JOIN track t ON tc.track_id = t.track_id
-  JOIN artist_album aa ON t.album_id = aa.album_id
-  JOIN artist a ON aa.artist_id = a.artist_id
- WHERE a.artist_name = 'Control Denied';
+ FROM collection AS c
+ JOIN track_collection tc ON c.collection_id = tc.collection_id
+ JOIN track t ON tc.track_id = t.track_id
+ JOIN artist_album aa ON t.album_id = aa.album_id
+ JOIN artist a ON aa.artist_id = a.artist_id
+WHERE a.artist_name = 'Control Denied';
 
 
 /* ЗАДАНИЕ 4 */
@@ -86,14 +86,14 @@ SELECT a.album_name
   FROM album AS a 
   JOIN artist_album AS aa ON a.album_id = aa.album_id
   JOIN genre_artist AS ga ON aa.artist_id = ga.artist_id
- GROUP BY a.album_name
-HAVING COUNT(ga.genre_id) > 1;
+  GROUP BY a.album_name
+  HAVING COUNT(ga.genre_id) > 1;
   
 
 /* 2. Наименования треков, которые не входят в сборники */ 
 SELECT t.track_name
   FROM track AS t
- WHERE t.track_id NOT IN (
+  WHERE t.track_id NOT IN (
   	SELECT track_id
   	  FROM track_collection
   );
@@ -106,11 +106,11 @@ SELECT a.artist_name, t.track_length AS min_track_tength_in_sec
   JOIN track AS t ON aa.album_id = t.album_id
  WHERE t.track_length = (
     SELECT MIN(track_length) 
-      FROM track
+    FROM track
     );
 
 
-/* 4. Названия альбомов, содержащих наименьшее количество треков */ 
+/* 4. Названия альбомов, содержащих наименьшее количество треков, вариант 1 */ 
 SELECT a.album_name, COUNT(t.album_id) AS track_count
   FROM album AS a
   JOIN track AS t ON a.album_id = t.album_id
@@ -121,6 +121,22 @@ HAVING COUNT(t.album_id) = (
   		  SELECT COUNT(album_id) as track_count
 	  	    FROM track
 	 	     GROUP BY album_id
-  		)
+  		  )
   	)
- ORDER BY a.album_name;
+  ORDER BY a.album_name;
+
+/* 4. Названия альбомов, содержащих наименьшее количество треков, вариант 2 */ 
+SELECT album.album_name, COUNT(track.track_name) AS track_count
+  FROM album 
+  JOIN track ON album.album_id = track.album_id
+ GROUP BY album.album_id
+HAVING COUNT(track.track_name) = (  
+	SELECT COUNT(track.track_name)
+	  FROM album
+	  JOIN track ON album.album_id = track.album_id
+	 GROUP BY album.album_id
+	 ORDER BY COUNT(track.track_name)
+	 LIMIT 1);
+
+
+
